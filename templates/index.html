@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduGenie AI Learning Assistant</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header class="app-header">
+        <h1>EduGenie AI</h1>
+        <p>Personalized Multi-Engine Learning Assistant Workspace</p>
+    </header>
+
+    <main class="workspace-container">
+        <!-- Navigation Tabs Selector -->
+        <nav class="module-tabs">
+            <button class="tab-link active" onclick="switchModule(event, 'qna-tab')">Q&A Engine</button>
+            <button class="tab-link" onclick="switchModule(event, 'explain-tab')">Concept Explainer</button>
+            <button class="tab-link" onclick="switchModule(event, 'quiz-tab')">Quiz Generator</button>
+            <button class="tab-link" onclick="switchModule(event, 'summary-tab')">Summarizer</button>
+            <button class="tab-link" onclick="switchModule(event, 'path-tab')">Learning Paths</button>
+        </nav>
+
+        <!-- QnA Tab View -->
+        <section id="qna-tab" class="tab-content active-content">
+            <form id="qna-form" onsubmit="transmitTask(event, '/api/qna', {context: 'qna-context', question: 'qna-question'}, 'qna-output', 'qna-spinner')">
+                <label for="qna-context">Source Reference Text / Context:</label>
+                <textarea id="qna-context" required placeholder="Paste your textbook chapter or lesson notes here..."></textarea>
+                
+                <label for="qna-question">Your Inquiry:</label>
+                <input type="text" id="qna-question" required placeholder="What specific concept would you like extracted or explained?">
+                
+                <button type="submit" class="submit-btn">Run Engine</button>
+            </form>
+            <div class="output-container">
+                <div id="qna-spinner" class="spinner hidden"></div>
+                <pre id="qna-output" class="output-block">Awaiting core data stream...</pre>
+            </div>
+        </section>
+
+        <!-- Concept Explainer Tab -->
+        <section id="explain-tab" class="tab-content">
+            <form id="explain-form" onsubmit="transmitTask(event, '/api/explain', {concept: 'explain-concept', depth: 'explain-depth'}, 'explain-output', 'explain-spinner')">
+                <label for="explain-concept">Target Academic Concept:</label>
+                <input type="text" id="explain-concept" required placeholder="e.g., Quantum Entanglement, Photosynthesis">
+                
+                <label for="explain-depth">Cognitive Target Target Depth:</label>
+                <select id="explain-depth">
+                    <option value="Five Year Old Level">Explain Like I am 5 (Analogy Heavy)</option>
+                    <option value="High School Undergraduate">High School Fundamental</option>
+                    <option value="Rigorous Technical Breakdown">Rigorous Technical Breakdown</option>
+                </select>
+                
+                <button type="submit" class="submit-btn">Deconstruct Concept</button>
+            </form>
+            <div class="output-container">
+                <div id="explain-spinner" class="spinner hidden"></div>
+                <pre id="explain-output" class="output-block">Awaiting target system parameters...</pre>
+            </div>
+        </section>
+
+        <!-- Quiz Generator Tab -->
+        <section id="quiz-tab" class="tab-content">
+            <form id="quiz-form" onsubmit="generateInteractiveTest(event)">
+                <label for="quiz-context">Context Baseline Material:</label>
+                <textarea id="quiz-context" required placeholder="Paste textbook information to generate structural test assessments..."></textarea>
+                
+                <label for="quiz-count">Total Evaluation Questions:</label>
+                <input type="number" id="quiz-count" min="1" max="10" value="3" required>
+                
+                <button type="submit" class="submit-btn">Generate Interactive Test</button>
+            </form>
+            
+            <div class="output-container">
+                <!-- Visual Loading Anchor State Spinner -->
+                <div id="quiz-spinner" class="spinner hidden"></div>
+                
+                <!-- Dynamic Interactive Quiz Workspace (Hidden initially) -->
+                <div id="interactive-quiz-zone" class="hidden">
+                    <div id="quiz-questions-display"></div>
+                    <button type="button" id="grade-quiz-btn" class="submit-btn" style="margin-top: 1rem;" onclick="gradeInteractiveQuiz()">Submit Test Answers</button>
+                    <div id="quiz-score-report" class="output-block" style="margin-top: 1rem; font-weight: bold;"></div>
+                </div>
+                
+                <!-- Baseline Output Box for Awaiting States and Fallback Error Messages -->
+                <pre id="quiz-output" class="output-block">Awaiting diagnostic compilation inputs...</pre>
+            </div>
+        </section>
+
+
+        <!-- Text Summarizer Tab -->
+        <section id="summary-tab" class="tab-content">
+            <form id="summary-form" onsubmit="transmitTask(event, '/api/summary', {text: 'summary-text', format_style: 'summary-style'}, 'summary-output', 'summary-spinner')">
+                <label for="summary-text">Source Document Material:</label>
+                <textarea id="summary-text" required placeholder="Paste long-form research documentation here..."></textarea>
+                
+                <label for="summary-style">Structural Presentation Style:</label>
+                <select id="summary-style">
+                    <option value="High Density Bulleted Matrix">High Density Bulleted Matrix</option>
+                    <option value="Executive TL;DR Abstract Card">Executive TL;DR Abstract Card</option>
+                </select>
+                
+                <button type="submit" class="submit-btn">Execute Compression</button>
+            </form>
+            <div class="output-container">
+                <div id="summary-spinner" class="spinner hidden"></div>
+                <pre id="summary-output" class="output-block">Awaiting primary input text stream...</pre>
+            </div>
+        </section>
+
+        <!-- Learning Path Tab -->
+        <section id="path-tab" class="tab-content">
+            <form id="path-form" onsubmit="transmitTask(event, '/api/learning-path', {goal: 'path-goal', timeframe: 'path-timeframe'}, 'path-output', 'path-spinner')">
+                <label for="path-goal">Your Core Academic Objective:</label>
+                <input type="text" id="path-goal" required placeholder="e.g., Learn Full-Stack FastAPI architectures from scratch">
+                
+                <label for="path-timeframe">Allocated Training Timeline:</label>
+                <input type="text" id="path-timeframe" required placeholder="e.g., 2 Weeks, 1 Month">
+                
+                <button type="submit" class="submit-btn">Map Milestones Blueprint</button>
+            </form>
+            <div class="output-container">
+                <div id="path-spinner" class="spinner hidden"></div>
+                <pre id="path-output" class="output-block">Awaiting target educational roadmap constraints...</pre>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function switchModule(evt, tabId) {
+            const contents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < contents.length; i++) {
+                contents[i].classList.remove("active-content");
+            }
+            const tabs = document.getElementsByClassName("tab-link");
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove("active");
+            }
+            document.getElementById(tabId).classList.add("active-content");
+            evt.currentTarget.classList.add("active");
+        }
+
+        async function transmitTask(event, route, fieldsMapping, outputId, spinnerId, parseInteger = false) {
+            event.preventDefault();
+            const outputElement = document.getElementById(outputId);
+            const spinnerElement = document.getElementById(spinnerId);
+            
+            outputElement.textContent = "Processing active module operations. Please observe pipeline loading states...";
+            spinnerElement.classList.remove("hidden");
+
+            const payload = {};
+            for (const [key, elementId] of Object.entries(fieldsMapping)) {
+                const val = document.getElementById(elementId).value;
+                payload[key] = (parseInteger && key === 'num_questions') ? parseInt(val, 10) : val;
+            }
+
+            try {
+                const serverResponse = await fetch(route, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await serverResponse.json();
+                if (serverResponse.ok) {
+                    outputElement.textContent = data.output;
+                } else {
+                    outputElement.textContent = "Server Integration Fault: " + (data.detail || "Unexpected validation state failure.");
+                }
+            } catch (networkError) {
+                outputElement.textContent = "Network Transmission Exception: Unable to talk to FastAPI pipeline server.";
+            } finally {
+                spinnerElement.classList.add("hidden");
+            }
+        }
+
+        let currentQuizAnswers = {}; // Global store for hidden correct answers
+
+        async function generateInteractiveTest(event) {
+            event.preventDefault();
+            
+            const context = document.getElementById('quiz-context').value;
+            const count = document.getElementById('quiz-count').value;
+            const outputElement = document.getElementById('quiz-output');
+            const spinnerElement = document.getElementById('quiz-spinner');
+            const quizZone = document.getElementById('interactive-quiz-zone');
+            const questionsDisplay = document.getElementById('quiz-questions-display');
+            const scoreReport = document.getElementById('quiz-score-report');
+
+            // Reset views
+            outputElement.classList.remove('hidden');
+            quizZone.classList.add('hidden');
+            scoreReport.textContent = "";
+            outputElement.textContent = "Compiling your interactive assessment test. Please wait...";
+            spinnerElement.classList.remove("hidden");
+
+            try {
+                const response = await fetch('/api/quiz', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ context: context, num_questions: parseInt(count, 10) })
+                });
+                
+                const data = await response.json();
+                spinnerElement.classList.add("hidden");
+
+                if (response.ok) {
+                    const rawText = data.output;
+                    
+                    // Split the questions from the hidden answer key
+                    if (rawText.includes('|||ANSWERKEY|||')) {
+                        const parts = rawText.split('|||ANSWERKEY|||');
+                        const questionsText = parts[0].trim();
+                        const answersText = parts[1].trim();
+
+                        // Parse and store hidden answers globally
+                        currentQuizAnswers = {};
+                        const answerLines = answersText.split('\n');
+                        answerLines.forEach(line => {
+                            const match = line.match(/(\d+):\s*([A-D])/i);
+                            if (match) {
+                                currentQuizAnswers[match[1]] = match[2].toUpperCase();
+                            }
+                        });
+
+                        // Format questions into basic readable structures
+                        outputElement.classList.add('hidden');
+                        quizZone.classList.remove('hidden');
+                        
+                        // Replace newlines with breaks for simple interactive reading
+                        questionsDisplay.innerHTML = `<pre class="output-block" style="font-family:inherit; white-space:pre-wrap;">${questionsText}\n\nType your answer letters below or grade your choices against the backend master key.</pre>`;
+                        
+                        // Add simple input boxes dynamically for each question
+                        let inputsHtml = '<div style="margin-top:1rem; display:flex; flex-direction:column; gap:0.5rem;">';
+                        for (let i = 1; i <= Object.keys(currentQuizAnswers).length; i++) {
+                            inputsHtml += `
+                                <div style="display:flex; align-items:center; gap:1rem;">
+                                    <label>Question ${i} Answer:</label>
+                                    <select id="user-ans-${i}" style="padding:0.3rem; background:var(--bg-main); color:white; border:1px solid var(--border-color);">
+                                        <option value="">Select...</option>
+                                        <option value="A">A</option>
+                                        <option value="B">B</option>
+                                        <option value="C">C</option>
+                                        <option value="D">D</option>
+                                    </select>
+                                </div>`;
+                        }
+                        inputsHtml += '</div>';
+                        questionsDisplay.innerHTML += inputsHtml;
+
+                    } else {
+                        // Fallback if the model didn't use the split token properly
+                        outputElement.textContent = rawText;
+                    }
+                } else {
+                    outputElement.textContent = "Server Integration Fault: " + (data.detail || "Error generating test.");
+                }
+            } catch (err) {
+                spinnerElement.classList.add("hidden");
+                outputElement.textContent = "Network Error loading test framework.";
+            }
+        }
+
+        function gradeInteractiveQuiz() {
+            const scoreReport = document.getElementById('quiz-score-report');
+            let correctCount = 0;
+            const totalQuestions = Object.keys(currentQuizAnswers).length;
+
+            if (totalQuestions === 0) return;
+
+            let reportDetails = "";
+
+            for (let i = 1; i <= totalQuestions; i++) {
+                const userAns = document.getElementById(`user-ans-${i}`).value;
+                const correctAns = currentQuizAnswers[i];
+
+                if (userAns === correctAns) {
+                    correctCount++;
+                    reportDetails += `⚠️ Question ${i}: Correct! (${correctAns})\n`;
+                } else {
+                    reportDetails += `❌ Question ${i}: Incorrect. You selected ${userAns || 'None'}. Correct answer was ${correctAns}.\n`;
+                }
+            }
+
+            const finalPercentage = ((correctCount / totalQuestions) * 100).toFixed(0);
+            scoreReport.innerHTML = `
+                <div style="font-size:1.2rem; color:var(--accent-blue); margin-bottom:0.5rem;">
+                    Your Score: ${correctCount} / ${totalQuestions} (${finalPercentage}%)
+                </div>
+                <pre style="font-family:monospace; font-size:0.9rem; color:var(--text-muted);">${reportDetails}</pre>
+            `;
+        }
+
+    </script>
+</body>
+</html>
+
+
